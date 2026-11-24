@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../models/tarea.dart';
+import '../data/app_database.dart';
 
 // Pantalla base SIN persistencia ni operaciones CRUD implementadas.
 // Conserva las indicaciones TODO para orientar tu trabajo.
@@ -12,40 +14,64 @@ class TareasPage extends StatefulWidget {
 
 class _TareasPageState extends State<TareasPage> {
   final TextEditingController _tituloController = TextEditingController();
+  late final AppDatabase _db;
 
   List<Tarea> _tareas = [];
 
   @override
   void initState() {
     super.initState();
-
+    _db = AppDatabase();
+    _cargarTareas();
   }
 
-  void _agregarTarea() {
-    _pendiente('Implementar registro de tarea');
+  Future<void> _cargarTareas() async {
+    try {
+      final tareas = await _db.obtenerTareas();
+      if (!mounted) return;
+      setState(() => _tareas = tareas);
+    } catch (e) {
+      _mostrarMensaje('No se pudieron cargar las tareas');
+    }
+  }
+
+  Future<void> _agregarTarea() async {
+    final titulo = _tituloController.text;
+    if (titulo.trim().isEmpty) {
+      _mostrarMensaje('Escribe un título para la tarea');
+      return;
+    }
+    try {
+      await _db.insertarTarea(titulo);
+      _tituloController.clear();
+      await _cargarTareas();
+    } catch (e) {
+      if (!mounted) return;
+      _mostrarMensaje('No se pudo guardar la tarea');
+    }
   }
 
   void _alternarCompletada(Tarea tarea, bool completada) {
-    _pendiente('Implementar actualización de tarea');
+    _mostrarMensaje('Implementar actualización de tarea');
   }
 
   void _editarTarea(Tarea tarea) {
-    _pendiente('Implementar edición de título');
+    _mostrarMensaje('Implementar edición de título');
   }
 
   void _eliminarTarea(Tarea tarea) {
-    _pendiente('Implementar eliminación de tarea');
+    _mostrarMensaje('Implementar eliminación de tarea');
   }
 
-  void _pendiente(String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(mensaje)),
-    );
+  void _mostrarMensaje(String mensaje) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(mensaje)));
   }
 
   @override
   void dispose() {
     _tituloController.dispose();
+    _db.close();
     super.dispose();
   }
 
