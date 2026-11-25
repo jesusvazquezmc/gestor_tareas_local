@@ -34,6 +34,38 @@ Para otro dispositivo, sustituye `chrome` por un identificador de `flutter devic
 ## Estado del proyecto
 
 - [x] Etapa 1: preparación y diseño
-- [ ] Etapa 2: persistencia real (crear y consultar)
-- [ ] Etapa 3: editar, cambiar estado y eliminar
-- [ ] Etapa 4: web, pruebas y documentación
+- [x] Etapa 2: persistencia real (crear y consultar)
+- [x] Etapa 3: editar, cambiar estado y eliminar
+- [x] Etapa 4: web, pruebas y documentación
+
+## Plataformas
+
+- **Probadas**: Android (teléfono físico Samsung SM A125M, Android 12) y web (Chrome).
+- **Previstas, no probadas**: iOS, Windows, Linux y macOS. La capa de persistencia usa `drift_flutter`, que las soporta, pero no ejecuté la app en ellas.
+
+## Pruebas manuales
+
+| ID | Resultado | Plataforma |
+|----|-----------|------------|
+| P1 | Pasó: las tres tareas siguen tras cerrar y abrir | Android |
+| P2 | Pasó: el estado se conserva | Android |
+| P3 | Pasó: aparece el nuevo título | Android |
+| P4 | Pasó: la tarea eliminada no reaparece | Android |
+| P5 | Pasó: no se registra un título vacío | Android |
+| P6 | Pasó: los datos permanecen al recargar y al cerrar/abrir la pestaña (`localhost:5000`) | Chrome |
+
+## Pruebas automatizadas
+
+Se ejecutan con `flutter test` y usan una base de datos en memoria:
+
+- Validación: rechaza títulos vacíos o de solo espacios.
+- Almacenamiento: inserta y consulta (recortando espacios), edita, cambia estado y elimina por id.
+- Pantalla: la pantalla inicial se muestra sin errores con una base inyectada.
+
+## Web
+
+Se usan `sqlite3.wasm` y `drift_worker.js` en `web/`, de las versiones que corresponden a `pubspec.lock` (drift 2.35.4, sqlite3 3.5.2). Para probar con datos persistentes:
+
+    flutter run -d web-server --web-port 5000
+
+y abrir `http://localhost:5000`.
