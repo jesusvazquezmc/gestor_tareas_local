@@ -51,16 +51,66 @@ class _TareasPageState extends State<TareasPage> {
     }
   }
 
-  void _alternarCompletada(Tarea tarea, bool completada) {
-    _mostrarMensaje('Implementar actualización de tarea');
+  Future<void> _alternarCompletada(Tarea tarea, bool completada) async {
+    try {
+      await _db.cambiarEstado(tarea.id, completada);
+      await _cargarTareas();
+    } catch (e) {
+      if (!mounted) return;
+      _mostrarMensaje('No se pudo actualizar la tarea');
+    }
   }
 
-  void _editarTarea(Tarea tarea) {
-    _mostrarMensaje('Implementar edición de título');
+  Future<void> _editarTarea(Tarea tarea) async {
+    final controller = TextEditingController(text: tarea.titulo);
+    final nuevoTitulo = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Editar tarea'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Título',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+
+    if (nuevoTitulo == null) return; // canceló
+    if (!mounted) return;
+    if (nuevoTitulo.trim().isEmpty) {
+      _mostrarMensaje('El título no puede estar vacío');
+      return;
+    }
+    try {
+      await _db.actualizarTitulo(tarea.id, nuevoTitulo);
+      await _cargarTareas();
+    } catch (e) {
+      if (!mounted) return;
+      _mostrarMensaje('No se pudo editar la tarea');
+    }
   }
 
-  void _eliminarTarea(Tarea tarea) {
-    _mostrarMensaje('Implementar eliminación de tarea');
+  Future<void> _eliminarTarea(Tarea tarea) async {
+    try {
+      await _db.eliminarTarea(tarea.id);
+      await _cargarTareas();
+    } catch (e) {
+      if (!mounted) return;
+      _mostrarMensaje('No se pudo eliminar la tarea');
+    }
   }
 
   void _mostrarMensaje(String mensaje) {
