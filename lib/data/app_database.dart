@@ -16,8 +16,17 @@ class Tareas extends Table {
 
 @DriftDatabase(tables: [Tareas])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase([QueryExecutor? executor])
-    : super(executor ?? driftDatabase(name: 'gestor_tareas'));
+  AppDatabase([QueryExecutor? executor]) : super(executor ?? _abrirConexion());
+
+  static QueryExecutor _abrirConexion() {
+    return driftDatabase(
+      name: 'gestor_tareas',
+      web: DriftWebOptions(
+        sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+        driftWorker: Uri.parse('drift_worker.js'),
+      ),
+    );
+  }
 
   @override
   int get schemaVersion => 1;
