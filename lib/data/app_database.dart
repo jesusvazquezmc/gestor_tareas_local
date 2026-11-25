@@ -40,4 +40,27 @@ class AppDatabase extends _$AppDatabase {
         .map((f) => Tarea(id: f.id, titulo: f.titulo, completada: f.completada))
         .toList();
   }
+
+  /// Cambia el título de una tarea. Rechaza títulos vacíos.
+  Future<void> actualizarTitulo(int id, String titulo) async {
+    final limpio = titulo.trim();
+    if (limpio.isEmpty) {
+      throw ArgumentError('El título no puede estar vacío');
+    }
+    await (update(tareas)..where((t) => t.id.equals(id))).write(
+      TareasCompanion(titulo: Value(limpio)),
+    );
+  }
+
+  /// Marca una tarea como completada o pendiente.
+  Future<void> cambiarEstado(int id, bool completada) async {
+    await (update(tareas)..where((t) => t.id.equals(id))).write(
+      TareasCompanion(completada: Value(completada)),
+    );
+  }
+
+  /// Elimina una tarea por su identificador.
+  Future<void> eliminarTarea(int id) async {
+    await (delete(tareas)..where((t) => t.id.equals(id))).go();
+  }
 }
