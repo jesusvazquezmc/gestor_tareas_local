@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import '../models/tarea.dart';
 import '../data/app_database.dart';
 
-// Pantalla base SIN persistencia ni operaciones CRUD implementadas.
-// Conserva las indicaciones TODO para orientar tu trabajo.
 class TareasPage extends StatefulWidget {
-  const TareasPage({super.key});
+  const TareasPage({super.key, this.db});
+
+  /// Base de datos opcional. Si no se pasa, la pantalla abre la real.
+  /// En las pruebas se inyecta una base en memoria.
+  final AppDatabase? db;
 
   @override
   State<TareasPage> createState() => _TareasPageState();
@@ -15,13 +17,15 @@ class TareasPage extends StatefulWidget {
 class _TareasPageState extends State<TareasPage> {
   final TextEditingController _tituloController = TextEditingController();
   late final AppDatabase _db;
+  late final bool _dbPropia;
 
   List<Tarea> _tareas = [];
 
   @override
   void initState() {
     super.initState();
-    _db = AppDatabase();
+    _dbPropia = widget.db == null;
+    _db = widget.db ?? AppDatabase();
     _cargarTareas();
   }
 
@@ -121,7 +125,7 @@ class _TareasPageState extends State<TareasPage> {
   @override
   void dispose() {
     _tituloController.dispose();
-    _db.close();
+    if (_dbPropia) _db.close();
     super.dispose();
   }
 
